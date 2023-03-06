@@ -105,7 +105,7 @@ func getDateIndex(date time.Time) (int, int) {
 }
 
 func (m Model) parseCalToView(calData []CalDataPoint) {
-	for _, v := range m.calData {
+	for _, v := range calData {
 		x, y := getDateIndex(v.Date)
 		// Check if in range
 		// TODO: un-hardcode the X limit
@@ -173,12 +173,13 @@ func getScaleColor(value float64) string {
 func (m Model) Init() tea.Cmd { return nil }
 
 // Create a new model with default settings.
-func New() Model {
+func New(data *[]CalDataPoint) Model {
 	todayX, todayY := getDateIndex(time.Now())
+	// m.parseCalToView(&data)
 	return Model{
 		selectedX: todayX,
 		selectedY: todayY,
-		calData:   []CalDataPoint{},
+		calData:   *data,
 		viewData:  [52][7]viewDataPoint{},
 		// focus:     false, // TODO
 	}
