@@ -149,7 +149,7 @@ func normalizeViewData() {
 	}
 }
 
-var viewData [52][7]viewDataPoint
+var viewData [52][7]viewDataPoint // Hardcoded to one year for now
 
 type viewDataPoint struct {
 	actual     float64
