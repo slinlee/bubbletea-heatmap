@@ -190,7 +190,7 @@ func New(data *[]CalDataPoint) Model {
 // return m.Cursor.Focus()
 // }
 
-func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	// TODO: ignore if not focused
 	// if !m.focus { return m, nil }
 
