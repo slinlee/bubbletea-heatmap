@@ -15,6 +15,7 @@ type Model struct {
 	selectedY int
 	calData   []CalDataPoint
 	viewData  [52][7]viewDataPoint // Hardcoded to one year for now
+	// focus     bool // TODO
 }
 
 var scaleColors = []string{
@@ -171,7 +172,27 @@ func getScaleColor(value float64) string {
 
 func (m Model) Init() tea.Cmd { return nil }
 
+// Create a new model with default settings.
+func New() Model {
+	todayX, todayY := getDateIndex(time.Now())
+	return Model{
+		selectedX: todayX,
+		selectedY: todayY,
+		calData:   []CalDataPoint{},
+		viewData:  [52][7]viewDataPoint{},
+		// focus:     false, // TODO
+	}
+}
+
+// func (m *Model) Focus() tea.Cmd { // TODO
+// m.focus = true
+// return m.Cursor.Focus()
+// }
+
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	// TODO: ignore if not focused
+	// if !m.focus { return m, nil }
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
