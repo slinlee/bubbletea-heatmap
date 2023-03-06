@@ -104,28 +104,31 @@ func getDateIndex(date time.Time) (int, int) {
 	return x, y
 }
 
-func (m Model) parseCalToView(calData []CalDataPoint) {
+func parseCalToView(calData []CalDataPoint) [52][7]viewDataPoint {
+	var viewData [52][7]viewDataPoint
+
 	for _, v := range calData {
 		x, y := getDateIndex(v.Date)
 		// Check if in range
 		// TODO: un-hardcode the X limit
 		if x > -1 && y > -1 &&
 			x < 52 && y < 7 {
-			m.viewData[x][y].actual += v.Value
+			viewData[x][y].actual += v.Value
 		}
 	}
-	m.normalizeViewData()
+	viewData = normalizeViewData(viewData)
+	return viewData
 }
 
-func (m Model) normalizeViewData() {
+func normalizeViewData(data [52][7]viewDataPoint) [52][7]viewDataPoint {
 	var min float64
 	var max float64
 
 	// Find min/max
-	min = m.viewData[0][0].actual
-	max = m.viewData[0][0].actual
+	min = data[0][0].actual
+	max = data[0][0].actual
 
-	for _, row := range m.viewData {
+	for _, row := range data {
 		for _, val := range row {
 
 			if val.actual < min {
@@ -139,11 +142,12 @@ func (m Model) normalizeViewData() {
 	}
 
 	// Normalize the data
-	for i, row := range m.viewData {
+	for i, row := range data {
 		for j, val := range row {
-			m.viewData[i][j].normalized = (val.actual - min) / (max - min)
+			data[i][j].normalized = (val.actual - min) / (max - min)
 		}
 	}
+	return data
 }
 
 type viewDataPoint struct {
@@ -170,17 +174,21 @@ func getScaleColor(value float64) string {
 // 	}
 // }
 
-func (m Model) Init() tea.Cmd { return nil }
+func (m Model) Init() tea.Cmd {
+	return nil
+}
 
 // Create a new model with default settings.
-func New(data *[]CalDataPoint) Model {
+func New(data []CalDataPoint) Model {
 	todayX, todayY := getDateIndex(time.Now())
-	// m.parseCalToView(&data)
+	fmt.Println(data) // debug
+
+	parsedData := parseCalToView(data)
 	return Model{
 		selectedX: todayX,
 		selectedY: todayY,
-		calData:   *data,
-		viewData:  [52][7]viewDataPoint{},
+		calData:   data,
+		viewData:  parsedData,
 		// focus:     false, // TODO
 	}
 }
@@ -236,7 +244,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 				getIndexDate(m.selectedX, m.selectedY),
 
 				1.0)
-			m.parseCalToView(m.calData)
+			m.viewData = parseCalToView(m.calData)
+			fmt.Print(m.viewData) // debug
 
 		}
 	}
