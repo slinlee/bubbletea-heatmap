@@ -1,16 +1,12 @@
 package bubbleteaheatmap
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"log"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/glamour"
 	"github.com/charmbracelet/lipgloss"
 
-	"os"
 	"time"
 )
 
@@ -63,16 +59,16 @@ func getIndexDate(x int, y int) time.Time {
 	return targetDate
 }
 
-func readMockData() {
-	// Generate mock data for debugging
+// func readMockData() {
+// 	// Generate mock data for debugging
 
-	today := time.Now()
+// 	today := time.Now()
 
-	for i := 0; i < 350; i++ {
-		addCalData(today.AddDate(0, 0, -i), float64(i%2))
-	}
+// 	for i := 0; i < 350; i++ {
+// 		addCalData(today.AddDate(0, 0, -i), float64(i%2))
+// 	}
 
-}
+// }
 
 func weeksAgo(date time.Time) int {
 	today := truncateToDate(time.Now())
@@ -165,13 +161,15 @@ func getScaleColor(value float64) string {
 	return scaleColors[int((value/max)*(numColors-1))]
 }
 
-func initialModel() model {
-	todayX, todayY := getDateIndex(time.Now())
-	return model{
-		selectedX: todayX,
-		selectedY: todayY,
-	}
-}
+// func initialModel() Model {
+// 	todayX, todayY := getDateIndex(time.Now())
+// 	return Model{
+// 		selectedX: todayX,
+// 		selectedY: todayY,
+// 		calData: CalDataPoint[],
+// 		viewData: viewDataPoint[]
+// 	}
+// }
 
 func (m model) Init() tea.Cmd { return nil }
 
@@ -302,31 +300,24 @@ func (m model) View() string {
 					Foreground(
 						lipgloss.Color(
 							getScaleColor(
-								viewData[i][j].normalized))).
+								m.viewData[i][j].normalized))).
 					Render("■")
 			}
 		}
 		s += "\n"
 	}
 
-	// The footer
-	s += "\nPress q to quit.\n"
-
-	// Send the UY for rendering
-
 	return s
 }
 
-func main() {
-	readFromFile("./s0br.json")
-	// readMockData() // debug
+// func main() {
 
-	// Parse Data
-	parseCalToView(calData)
+// 	// Parse Data
+// 	parseCalToView(calData)
 
-	p := tea.NewProgram(initialModel())
-	if _, err := p.Run(); err != nil {
-		fmt.Printf("Alas, there's been an error: %v", err)
-		os.Exit(1)
-	}
-}
+// 	p := tea.NewProgram(initialModel())
+// 	if _, err := p.Run(); err != nil {
+// 		fmt.Printf("Alas, there's been an error: %v", err)
+// 		os.Exit(1)
+// 	}
+// }
