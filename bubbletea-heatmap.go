@@ -10,9 +10,11 @@ import (
 	"time"
 )
 
-type model struct {
+type Model struct {
 	selectedX int
 	selectedY int
+	calData   []CalDataPoint
+	viewData  [52][7]viewDataPoint // Hardcoded to one year for now
 }
 
 var scaleColors = []string{
@@ -37,12 +39,10 @@ type CalDataPoint struct {
 	Value float64
 }
 
-var calData []CalDataPoint
-
-func addCalData(date time.Time, val float64) {
+func (m Model) addCalData(date time.Time, val float64) {
 	// Create new cal data point and add to cal data
 	newPoint := CalDataPoint{date, val}
-	calData = append(calData, newPoint)
+	m.calData = append(m.calData, newPoint)
 }
 
 func getIndexDate(x int, y int) time.Time {
@@ -103,28 +103,28 @@ func getDateIndex(date time.Time) (int, int) {
 	return x, y
 }
 
-func parseCalToView(calData []CalDataPoint) {
-	for _, v := range calData {
+func (m Model) parseCalToView(calData []CalDataPoint) {
+	for _, v := range m.calData {
 		x, y := getDateIndex(v.Date)
 		// Check if in range
 		// TODO: un-hardcode the X limit
 		if x > -1 && y > -1 &&
 			x < 52 && y < 7 {
-			viewData[x][y].actual += v.Value
+			m.viewData[x][y].actual += v.Value
 		}
 	}
-	normalizeViewData()
+	m.normalizeViewData()
 }
 
-func normalizeViewData() {
+func (m Model) normalizeViewData() {
 	var min float64
 	var max float64
 
 	// Find min/max
-	min = viewData[0][0].actual
-	max = viewData[0][0].actual
+	min = m.viewData[0][0].actual
+	max = m.viewData[0][0].actual
 
-	for _, row := range viewData {
+	for _, row := range m.viewData {
 		for _, val := range row {
 
 			if val.actual < min {
@@ -138,14 +138,12 @@ func normalizeViewData() {
 	}
 
 	// Normalize the data
-	for i, row := range viewData {
+	for i, row := range m.viewData {
 		for j, val := range row {
-			viewData[i][j].normalized = (val.actual - min) / (max - min)
+			m.viewData[i][j].normalized = (val.actual - min) / (max - min)
 		}
 	}
 }
-
-var viewData [52][7]viewDataPoint // Hardcoded to one year for now
 
 type viewDataPoint struct {
 	actual     float64
@@ -171,9 +169,9 @@ func getScaleColor(value float64) string {
 // 	}
 // }
 
-func (m model) Init() tea.Cmd { return nil }
+func (m Model) Init() tea.Cmd { return nil }
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -212,18 +210,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case "enter", " ":
 			// Hard coded to add a new entry with value `1.0`
-			addCalData(
+			m.addCalData(
 				getIndexDate(m.selectedX, m.selectedY),
 
 				1.0)
-			parseCalToView(calData)
+			m.parseCalToView(m.calData)
 
 		}
 	}
 	return m, nil
 }
 
-func (m model) View() string {
+func (m Model) View() string {
 	// The header
 
 	theTime := getIndexDate(m.selectedX, m.selectedY) //time.Now()
@@ -231,7 +229,7 @@ func (m model) View() string {
 	title, _ := glamour.Render(theTime.Format("# Monday, January 02, 2006"), "dark")
 	s := title
 
-	selectedDetail := "    Value: " + fmt.Sprint(viewData[m.selectedX][m.selectedY].actual) + " normalized: " + fmt.Sprint(viewData[m.selectedX][m.selectedY].normalized) + "\n\n"
+	selectedDetail := "    Value: " + fmt.Sprint(m.viewData[m.selectedX][m.selectedY].actual) + " normalized: " + fmt.Sprint(m.viewData[m.selectedX][m.selectedY].normalized) + "\n\n"
 
 	s += selectedDetail
 
@@ -288,7 +286,7 @@ func (m model) View() string {
 				s += boxSelectedStyle.Copy().Foreground(
 					lipgloss.Color(
 						getScaleColor(
-							viewData[i][j].normalized))).
+							m.viewData[i][j].normalized))).
 					Render("■")
 			} else if i == 51 &&
 				j > int(time.Now().Weekday()) {
