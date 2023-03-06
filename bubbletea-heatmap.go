@@ -63,32 +63,6 @@ func getIndexDate(x int, y int) time.Time {
 	return targetDate
 }
 
-func saveToFile(filename string) {
-	// return // debug
-	// ** To save a file
-	file, err := json.MarshalIndent(calData, "", " ")
-	if err != nil {
-		fmt.Printf("Alas, there's been an error: %v", err)
-		os.Exit(1)
-	}
-	_ = ioutil.WriteFile(filename, file, 0644)
-}
-
-func readFromFile(filename string) {
-
-	// Get Data from File
-	content, err := ioutil.ReadFile(filename)
-	if err != nil {
-		log.Fatal("Error when opening file: ", err)
-	}
-
-	err = json.Unmarshal(content, &calData)
-	if err != nil {
-		log.Fatal("Error during Unmarshall(): ", err)
-	}
-
-}
-
 func readMockData() {
 	// Generate mock data for debugging
 
