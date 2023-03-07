@@ -60,17 +60,6 @@ func getIndexDate(x int, y int) time.Time {
 	return targetDate
 }
 
-// func readMockData() {
-// 	// Generate mock data for debugging
-
-// 	today := time.Now()
-
-// 	for i := 0; i < 350; i++ {
-// 		addCalData(today.AddDate(0, 0, -i), float64(i%2))
-// 	}
-
-// }
-
 func weeksAgo(date time.Time) int {
 	today := truncateToDate(time.Now())
 	thisWeek := today.AddDate(0, 0, -int(today.Weekday())) // Most recent Sunday
@@ -163,7 +152,6 @@ func (m Model) Init() tea.Cmd {
 // Create a new model with default settings.
 func New(data []CalDataPoint) Model {
 	todayX, todayY := getDateIndex(time.Now())
-	fmt.Println(data) // debug
 
 	parsedData := parseCalToView(data)
 	return Model{
@@ -227,7 +215,6 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 				1.0)
 			m.viewData = parseCalToView(m.calData)
-			fmt.Print(m.viewData) // debug
 
 		}
 	}
@@ -242,7 +229,12 @@ func (m Model) View() string {
 	title, _ := glamour.Render(theTime.Format("# Monday, January 02, 2006"), "dark")
 	s := title
 
-	selectedDetail := "    Value: " + fmt.Sprint(m.viewData[m.selectedX][m.selectedY].actual) + " normalized: " + fmt.Sprint(m.viewData[m.selectedX][m.selectedY].normalized) + "\n\n"
+	selectedDetail :=
+		"    Value: " +
+			fmt.Sprint(m.viewData[m.selectedX][m.selectedY].actual) +
+			" normalized: " +
+			fmt.Sprint(m.viewData[m.selectedX][m.selectedY].normalized) +
+			"\n\n"
 
 	s += selectedDetail
 
