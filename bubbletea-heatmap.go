@@ -83,15 +83,7 @@ func weeksAgo(date time.Time) int {
 }
 
 func truncateToDate(t time.Time) time.Time {
-	return time.Date(
-		t.Local().Year(),
-		t.Local().Month(),
-		t.Local().Day(),
-		0,
-		0,
-		0,
-		0,
-		t.Local().Location())
+	return time.Date(t.Local().Year(), t.Local().Month(), t.Local().Day(), 0, 0, 0, 0, t.Local().Location())
 }
 
 func getDateIndex(date time.Time) (int, int) {
@@ -163,16 +155,6 @@ func getScaleColor(value float64) string {
 
 	return scaleColors[int((value/max)*(numColors-1))]
 }
-
-// func initialModel() Model {
-// 	todayX, todayY := getDateIndex(time.Now())
-// 	return Model{
-// 		selectedX: todayX,
-// 		selectedY: todayY,
-// 		calData: CalDataPoint[],
-// 		viewData: viewDataPoint[]
-// 	}
-// }
 
 func (m Model) Init() tea.Cmd {
 	return nil
@@ -294,6 +276,7 @@ func (m Model) View() string {
 	s += "\n"
 
 	for j := 0; j < 7; j++ {
+		// Add day of week labels
 		switch j {
 		case 0:
 			s += labelStyle.Render("S ")
@@ -311,6 +294,7 @@ func (m Model) View() string {
 			s += labelStyle.Render("S ")
 		}
 
+		// Add calendar days
 		for i := 0; i < 52; i++ {
 			// Selected Item
 			if m.selectedX == i && m.selectedY == j {
@@ -319,11 +303,15 @@ func (m Model) View() string {
 						getScaleColor(
 							m.viewData[i][j].normalized))).
 					Render("■")
+
 			} else if i == 51 &&
 				j > int(time.Now().Weekday()) {
+
 				// In the future
 				s += boxStyle.Render(" ")
+
 			} else {
+
 				// Not Selected Item and not in the future
 				s += boxStyle.Copy().
 					Foreground(
