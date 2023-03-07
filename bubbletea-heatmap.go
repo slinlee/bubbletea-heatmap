@@ -1,22 +1,21 @@
 package bubbleteaheatmap
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"log"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/glamour"
 	"github.com/charmbracelet/lipgloss"
 
-	"os"
 	"time"
 )
 
-type model struct {
+type Model struct {
 	selectedX int
 	selectedY int
+	calData   []CalDataPoint
+	viewData  [52][7]viewDataPoint // Hardcoded to one year for now
+	// focus     bool // TODO
 }
 
 var scaleColors = []string{
@@ -41,12 +40,10 @@ type CalDataPoint struct {
 	Value float64
 }
 
-var calData []CalDataPoint
-
-func addCalData(date time.Time, val float64) {
+func (m Model) addCalData(date time.Time, val float64) {
 	// Create new cal data point and add to cal data
 	newPoint := CalDataPoint{date, val}
-	calData = append(calData, newPoint)
+	m.calData = append(m.calData, newPoint)
 }
 
 func getIndexDate(x int, y int) time.Time {
@@ -63,16 +60,16 @@ func getIndexDate(x int, y int) time.Time {
 	return targetDate
 }
 
-func readMockData() {
-	// Generate mock data for debugging
+// func readMockData() {
+// 	// Generate mock data for debugging
 
-	today := time.Now()
+// 	today := time.Now()
 
-	for i := 0; i < 350; i++ {
-		addCalData(today.AddDate(0, 0, -i), float64(i%2))
-	}
+// 	for i := 0; i < 350; i++ {
+// 		addCalData(today.AddDate(0, 0, -i), float64(i%2))
+// 	}
 
-}
+// }
 
 func weeksAgo(date time.Time) int {
 	today := truncateToDate(time.Now())
@@ -107,7 +104,9 @@ func getDateIndex(date time.Time) (int, int) {
 	return x, y
 }
 
-func parseCalToView(calData []CalDataPoint) {
+func parseCalToView(calData []CalDataPoint) [52][7]viewDataPoint {
+	var viewData [52][7]viewDataPoint
+
 	for _, v := range calData {
 		x, y := getDateIndex(v.Date)
 		// Check if in range
@@ -117,18 +116,19 @@ func parseCalToView(calData []CalDataPoint) {
 			viewData[x][y].actual += v.Value
 		}
 	}
-	normalizeViewData()
+	viewData = normalizeViewData(viewData)
+	return viewData
 }
 
-func normalizeViewData() {
+func normalizeViewData(data [52][7]viewDataPoint) [52][7]viewDataPoint {
 	var min float64
 	var max float64
 
 	// Find min/max
-	min = viewData[0][0].actual
-	max = viewData[0][0].actual
+	min = data[0][0].actual
+	max = data[0][0].actual
 
-	for _, row := range viewData {
+	for _, row := range data {
 		for _, val := range row {
 
 			if val.actual < min {
@@ -142,14 +142,13 @@ func normalizeViewData() {
 	}
 
 	// Normalize the data
-	for i, row := range viewData {
+	for i, row := range data {
 		for j, val := range row {
-			viewData[i][j].normalized = (val.actual - min) / (max - min)
+			data[i][j].normalized = (val.actual - min) / (max - min)
 		}
 	}
+	return data
 }
-
-var viewData [52][7]viewDataPoint // Hardcoded to one year for now
 
 type viewDataPoint struct {
 	actual     float64
@@ -165,17 +164,44 @@ func getScaleColor(value float64) string {
 	return scaleColors[int((value/max)*(numColors-1))]
 }
 
-func initialModel() model {
+// func initialModel() Model {
+// 	todayX, todayY := getDateIndex(time.Now())
+// 	return Model{
+// 		selectedX: todayX,
+// 		selectedY: todayY,
+// 		calData: CalDataPoint[],
+// 		viewData: viewDataPoint[]
+// 	}
+// }
+
+func (m Model) Init() tea.Cmd {
+	return nil
+}
+
+// Create a new model with default settings.
+func New(data []CalDataPoint) Model {
 	todayX, todayY := getDateIndex(time.Now())
-	return model{
+	fmt.Println(data) // debug
+
+	parsedData := parseCalToView(data)
+	return Model{
 		selectedX: todayX,
 		selectedY: todayY,
+		calData:   data,
+		viewData:  parsedData,
+		// focus:     false, // TODO
 	}
 }
 
-func (m model) Init() tea.Cmd { return nil }
+// func (m *Model) Focus() tea.Cmd { // TODO
+// m.focus = true
+// return m.Cursor.Focus()
+// }
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
+	// TODO: ignore if not focused
+	// if !m.focus { return m, nil }
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -214,18 +240,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case "enter", " ":
 			// Hard coded to add a new entry with value `1.0`
-			addCalData(
+			m.addCalData(
 				getIndexDate(m.selectedX, m.selectedY),
 
 				1.0)
-			parseCalToView(calData)
+			m.viewData = parseCalToView(m.calData)
+			fmt.Print(m.viewData) // debug
 
 		}
 	}
 	return m, nil
 }
 
-func (m model) View() string {
+func (m Model) View() string {
 	// The header
 
 	theTime := getIndexDate(m.selectedX, m.selectedY) //time.Now()
@@ -233,7 +260,7 @@ func (m model) View() string {
 	title, _ := glamour.Render(theTime.Format("# Monday, January 02, 2006"), "dark")
 	s := title
 
-	selectedDetail := "    Value: " + fmt.Sprint(viewData[m.selectedX][m.selectedY].actual) + " normalized: " + fmt.Sprint(viewData[m.selectedX][m.selectedY].normalized) + "\n\n"
+	selectedDetail := "    Value: " + fmt.Sprint(m.viewData[m.selectedX][m.selectedY].actual) + " normalized: " + fmt.Sprint(m.viewData[m.selectedX][m.selectedY].normalized) + "\n\n"
 
 	s += selectedDetail
 
@@ -290,7 +317,7 @@ func (m model) View() string {
 				s += boxSelectedStyle.Copy().Foreground(
 					lipgloss.Color(
 						getScaleColor(
-							viewData[i][j].normalized))).
+							m.viewData[i][j].normalized))).
 					Render("■")
 			} else if i == 51 &&
 				j > int(time.Now().Weekday()) {
@@ -302,31 +329,12 @@ func (m model) View() string {
 					Foreground(
 						lipgloss.Color(
 							getScaleColor(
-								viewData[i][j].normalized))).
+								m.viewData[i][j].normalized))).
 					Render("■")
 			}
 		}
 		s += "\n"
 	}
 
-	// The footer
-	s += "\nPress q to quit.\n"
-
-	// Send the UY for rendering
-
 	return s
-}
-
-func main() {
-	readFromFile("./s0br.json")
-	// readMockData() // debug
-
-	// Parse Data
-	parseCalToView(calData)
-
-	p := tea.NewProgram(initialModel())
-	if _, err := p.Run(); err != nil {
-		fmt.Printf("Alas, there's been an error: %v", err)
-		os.Exit(1)
-	}
 }
