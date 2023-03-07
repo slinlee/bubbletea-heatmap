@@ -229,7 +229,12 @@ func (m Model) View() string {
 	title, _ := glamour.Render(theTime.Format("# Monday, January 02, 2006"), "dark")
 	s := title
 
-	selectedDetail := "    Value: " + fmt.Sprint(m.viewData[m.selectedX][m.selectedY].actual) + " normalized: " + fmt.Sprint(m.viewData[m.selectedX][m.selectedY].normalized) + "\n\n"
+	selectedDetail :=
+		"    Value: " +
+			fmt.Sprint(m.viewData[m.selectedX][m.selectedY].actual) +
+			" normalized: " +
+			fmt.Sprint(m.viewData[m.selectedX][m.selectedY].normalized) +
+			"\n\n"
 
 	s += selectedDetail
 
