@@ -4,7 +4,9 @@
 
 This is a work in progress. I'm building it to learn how to use Charm Bubbletea and I welcome any feedback/help/tips/PR/bug reports!
 
-The input for this component is an array of `CalDataPoints` which is a `{ Date time.Time Value float64}`
+The input for this component is an array of `CalDataPoints` which is a `{ Date time.Time Value float64}`. 
+
+You can have multiple entries for a day and they'll be summed together. The division between dates is always calculated using the users's Local (what `time.Now()` returns.
 
 ### Current behavior/limitations
 
