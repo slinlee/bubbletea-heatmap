@@ -2,7 +2,6 @@ package bubbleteaheatmap
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"log"
 	"testing"
 	"time"
@@ -12,7 +11,7 @@ func readFromFile(filename string) []CalDataPoint {
 	var fileData []CalDataPoint
 
 	// Get Data from File
-	content, err := ioutil.ReadFile(filename)
+	content, err := os.ReadFile(filename)
 	if err != nil {
 		log.Fatal("Error when opening file: ", err)
 	}
