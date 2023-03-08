@@ -39,7 +39,7 @@ type CalDataPoint struct {
 	Value float64
 }
 
-func (m Model) addCalData(date time.Time, val float64) {
+func (m *Model) addCalData(date time.Time, val float64) {
 	// Create new cal data point and add to cal data
 	newPoint := CalDataPoint{date, val}
 	m.calData = append(m.calData, newPoint)
