@@ -1,1 +1,3 @@
-.direnv
+.direnv/
+coverage.txt
+dist/

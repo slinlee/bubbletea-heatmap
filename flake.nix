@@ -16,6 +16,8 @@
             pkgs.delve
             pkgs.vhs
             pkgs.chromium
+            pkgs.golangci-lint
+            pkgs.gofumpt
           ];
         };
       });
