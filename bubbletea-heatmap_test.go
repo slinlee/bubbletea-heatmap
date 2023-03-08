@@ -23,7 +23,6 @@ func readFromFile(filename string) []CalDataPoint {
 	}
 
 	return fileData
-
 }
 
 func TestGetIndexDate(t *testing.T) {
@@ -45,7 +44,6 @@ func TestGetIndexDate(t *testing.T) {
 }
 
 func TestManyDates(t *testing.T) {
-
 	now := time.Now()
 
 	for i := 0; i < 350; i++ {
@@ -70,7 +68,6 @@ func TestManyDates(t *testing.T) {
 		}
 		now = now.AddDate(0, 0, -1)
 	}
-
 }
 
 func TestFileDates(t *testing.T) {
@@ -99,11 +96,9 @@ func TestFileDates(t *testing.T) {
 				expectedX, expectedY)
 		}
 	}
-
 }
 
 func TestDateOutsideRange(t *testing.T) {
-
 	now := time.Now()
 
 	dateInRange := now.AddDate(0, -1, -1)
@@ -127,5 +122,4 @@ func TestDateOutsideRange(t *testing.T) {
 
 	testData = append(testData, dataOutsideRangeFuture)
 	parseCalToView(testData)
-
 }

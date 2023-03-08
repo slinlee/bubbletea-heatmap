@@ -2,12 +2,11 @@ package bubbleteaheatmap
 
 import (
 	"fmt"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/glamour"
 	"github.com/charmbracelet/lipgloss"
-
-	"time"
 )
 
 type Model struct {
@@ -76,7 +75,6 @@ func truncateToDate(t time.Time) time.Time {
 }
 
 func getDateIndex(date time.Time) (int, int) {
-
 	// Max index - number of weeks ago
 	x := 51 - weeksAgo(date)
 
@@ -119,7 +117,6 @@ func normalizeViewData(data [52][7]viewDataPoint) [52][7]viewDataPoint {
 				max = val.actual
 			}
 		}
-
 	}
 
 	// Normalize the data
@@ -224,27 +221,26 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 func (m Model) View() string {
 	// The header
 
-	theTime := getIndexDate(m.selectedX, m.selectedY) //time.Now()
+	theTime := getIndexDate(m.selectedX, m.selectedY) // time.Now()
 
 	title, _ := glamour.Render(theTime.Format("# Monday, January 02, 2006"), "dark")
 	s := title
 
-	selectedDetail :=
-		"    Value: " +
-			fmt.Sprint(m.viewData[m.selectedX][m.selectedY].actual) +
-			" normalized: " +
-			fmt.Sprint(m.viewData[m.selectedX][m.selectedY].normalized) +
-			"\n\n"
+	selectedDetail := "    Value: " +
+		fmt.Sprint(m.viewData[m.selectedX][m.selectedY].actual) +
+		" normalized: " +
+		fmt.Sprint(m.viewData[m.selectedX][m.selectedY].normalized) +
+		"\n\n"
 
 	s += selectedDetail
 
-	var labelStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#888888"))
+	labelStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#888888"))
 
-	var boxStyle = lipgloss.NewStyle().
+	boxStyle := lipgloss.NewStyle().
 		PaddingRight(1).
 		Foreground(lipgloss.Color(scaleColors[2]))
 
-	var boxSelectedStyle = boxStyle.Copy().
+	boxSelectedStyle := boxStyle.Copy().
 		Background(lipgloss.Color("#9999ff")).
 		Foreground(lipgloss.Color(scaleColors[0]))
 
@@ -295,13 +291,11 @@ func (m Model) View() string {
 						getScaleColor(
 							m.viewData[i][j].normalized))).
 					Render("■")
-
 			} else if i == 51 &&
 				j > int(time.Now().Weekday()) {
 
 				// In the future
 				s += boxStyle.Render(" ")
-
 			} else {
 
 				// Not Selected Item and not in the future
